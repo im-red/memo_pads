@@ -27,6 +27,15 @@ const MemoList = ({
   const canGoPrev = currentIndex > 0;
   const canGoNext = currentIndex < memos.length - 1;
 
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (e.button !== 0) return;
+    const selection = window.getSelection();
+    if (selection && selection.toString().length > 0) {
+      return;
+    }
+    onToggleExplanation();
+  };
+
   if (memos.length === 0) {
     return (
       <div className="memo-view empty">
@@ -51,7 +60,7 @@ const MemoList = ({
       </div>
 
       <div className="memo-card">
-        <div className="memo-card__content">
+        <div className="memo-card__content" onPointerUp={handlePointerUp}>
           <p className="memo-card__original">{currentMemo?.originalText}</p>
           {showExplanation && (
             <p className="memo-card__explanation">{currentMemo?.explanation}</p>

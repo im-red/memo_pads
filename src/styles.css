@@ -315,6 +315,7 @@ main {
 
 .memo-card__content {
   min-height: 120px;
+  cursor: pointer;
 }
 
 .memo-card__original {
