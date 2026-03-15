@@ -1,5 +1,6 @@
 import { Memo } from '../types/memo';
 import clsx from 'clsx';
+import { useState, useRef, useEffect } from 'react';
 
 interface MemoListProps {
   memos: Memo[];
@@ -22,10 +23,26 @@ const MemoList = ({
   onEdit,
   onDelete
 }: MemoListProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const currentIndex = memos.findIndex(m => m.id === currentMemoId);
   const currentMemo = memos[currentIndex];
   const canGoPrev = currentIndex > 0;
   const canGoNext = currentIndex < memos.length - 1;
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const handlePointerUp = (e: React.PointerEvent) => {
     if (e.button !== 0) return;
@@ -34,6 +51,16 @@ const MemoList = ({
       return;
     }
     onToggleExplanation();
+  };
+
+  const handleEdit = () => {
+    setIsMenuOpen(false);
+    if (currentMemo) onEdit(currentMemo);
+  };
+
+  const handleDelete = () => {
+    setIsMenuOpen(false);
+    if (currentMemo) onDelete(currentMemo.id);
   };
 
   if (memos.length === 0) {
@@ -60,28 +87,32 @@ const MemoList = ({
       </div>
 
       <div className="memo-card">
-        <div className="memo-card__content" onPointerUp={handlePointerUp}>
+        <div className="memo-card__header">
           <p className="memo-card__original">{currentMemo?.originalText}</p>
+          <div className="memo-card__menu" ref={menuRef}>
+            <button
+              type="button"
+              className="memo-card__menu-btn"
+              onClick={() => setIsMenuOpen(v => !v)}
+            >
+              ⋮
+            </button>
+            {isMenuOpen && (
+              <div className="memo-card__menu-dropdown">
+                <button type="button" onClick={handleEdit}>
+                  Edit
+                </button>
+                <button type="button" onClick={handleDelete} className="danger">
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="memo-card__content" onPointerUp={handlePointerUp}>
           {showExplanation && (
             <p className="memo-card__explanation">{currentMemo?.explanation}</p>
           )}
-        </div>
-
-        <div className="memo-card__actions">
-          <button
-            type="button"
-            className="memo-card__action-btn"
-            onClick={() => currentMemo && onEdit(currentMemo)}
-          >
-            Edit
-          </button>
-          <button
-            type="button"
-            className="memo-card__action-btn memo-card__action-btn--danger"
-            onClick={() => currentMemo && onDelete(currentMemo.id)}
-          >
-            Delete
-          </button>
         </div>
       </div>
 
