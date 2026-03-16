@@ -294,11 +294,17 @@ const MemoList = ({
 
         <button
           type="button"
-          className={clsx('nav-btn', { disabled: !canGoNext })}
-          onClick={() => canGoNext && onNavigate(memos[currentIndex + 1].id)}
-          disabled={!canGoNext}
+          className={clsx('nav-btn', { disabled: !canGoNext && memos.length <= 1 })}
+          onClick={() => {
+            if (canGoNext) {
+              onNavigate(memos[currentIndex + 1].id);
+            } else if (currentIndex === memos.length - 1) {
+              onNavigate(memos[0].id);
+            }
+          }}
+          disabled={!canGoNext && memos.length <= 1}
         >
-          Next →
+          {canGoNext ? 'Next →' : currentIndex === memos.length - 1 ? '↻ Reset' : 'Next →'}
         </button>
       </div>
 
