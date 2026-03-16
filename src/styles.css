@@ -986,3 +986,31 @@ textarea:focus {
     padding-top: max(1rem, env(safe-area-inset-top));
   }
 }
+
+/* Swipe gesture styles */
+.memo-card {
+  will-change: transform;
+  touch-action: pan-y;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.memo-card--swiping {
+  cursor: grabbing;
+  cursor: -webkit-grabbing;
+}
+
+.memo-card--swiping .memo-card__content {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.memo-card--navigating {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memo-card {
+    transition: none !important;
+  }
+}
