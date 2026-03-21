@@ -9,6 +9,7 @@ interface MemoListProps {
   onToggleExplanation: () => void;
   onNavigate: (memoId: number) => void;
   onAdd: () => void;
+  onPaste: () => void;
   onEdit: (memo: Memo) => void;
   onDelete: (memoId: number) => void;
 }
@@ -20,6 +21,7 @@ const MemoList = ({
   onToggleExplanation,
   onNavigate,
   onAdd,
+  onPaste,
   onEdit,
   onDelete
 }: MemoListProps) => {
@@ -308,9 +310,14 @@ const MemoList = ({
         </button>
       </div>
 
-      <button type="button" className="add-memo-btn" onClick={onAdd}>
-        + Add Memo
-      </button>
+      <div className="memo-actions">
+        <button type="button" className="add-memo-btn" onClick={onAdd}>
+          + Add Memo
+        </button>
+        <button type="button" className="btn-icon" onClick={onPaste} title="Paste from clipboard">
+          📋
+        </button>
+      </div>
     </div>
   );
 };

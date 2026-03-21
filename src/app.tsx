@@ -30,6 +30,7 @@ const App = () => {
   const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(null);
   const [appMode, setAppMode] = useState<AppMode>('view');
   const [isAddMemoOpen, setIsAddMemoOpen] = useState(false);
+  const [memoOpenMode, setMemoOpenMode] = useState<'add' | 'paste'>('add');
   const [isAddNotebookOpen, setIsAddNotebookOpen] = useState(false);
   const [isExerciseOpen, setIsExerciseOpen] = useState(false);
   const [editMemo, setEditMemo] = useState<Memo | null>(null);
@@ -190,6 +191,15 @@ const App = () => {
   const handleAddMemo = useCallback(async (originalText: string, explanation: string) => {
     if (!selectedNotebookId) return;
 
+    const isDuplicate = memos.some(
+      m => m.notebookId === selectedNotebookId &&
+        m.originalText.trim() === originalText.trim() &&
+        m.explanation.trim() === explanation.trim()
+    );
+    if (isDuplicate) {
+      throw new Error('This memo already exists in the current notebook');
+    }
+
     const newMemo: Memo = {
       id: getNextMemoId(),
       originalText,
@@ -208,7 +218,7 @@ const App = () => {
     } catch (error) {
       console.warn('Unable to trigger haptic feedback', error);
     }
-  }, [selectedNotebookId, getNextMemoId, setMemos, currentMemoId, updateProgress]);
+  }, [selectedNotebookId, getNextMemoId, setMemos, currentMemoId, updateProgress, memos]);
 
   const handleEditMemo = useCallback(async (updatedMemo: Memo) => {
     setMemos(prev => prev.map(m => m.id === updatedMemo.id ? updatedMemo : m));
@@ -355,8 +365,9 @@ const App = () => {
     alert(`Imported ${newMemos.length} notes to "${notebookName}".`);
   }, [notebooks, setNotebooks, setMemos]);
 
-  const handleOpenAddMemo = () => {
+  const handleOpenAddMemo = (mode: 'add' | 'paste' = 'add') => {
     setEditMemo(null);
+    setMemoOpenMode(mode);
     setIsAddMemoOpen(true);
   };
 
@@ -511,6 +522,7 @@ const App = () => {
               onToggleExplanation={handleToggleExplanation}
               onNavigate={handleNavigateMemo}
               onAdd={handleOpenAddMemo}
+              onPaste={() => handleOpenAddMemo('paste')}
               onEdit={handleOpenEditMemo}
               onDelete={handleDeleteMemo}
             />
@@ -540,6 +552,7 @@ const App = () => {
         onSave={handleAddMemo}
         onEdit={handleEditMemo}
         editMemo={editMemo}
+        openMode={memoOpenMode}
       />
 
       <ExerciseOverlay

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Clipboard } from '@capacitor/clipboard';
 import { Memo } from '../types/memo';
 
 interface AddMemoOverlayProps {
@@ -7,6 +8,7 @@ interface AddMemoOverlayProps {
   onSave: (originalText: string, explanation: string) => void;
   onEdit?: (memo: Memo) => void;
   editMemo?: Memo | null;
+  openMode?: 'add' | 'paste';
 }
 
 const AddMemoOverlay = ({
@@ -14,11 +16,34 @@ const AddMemoOverlay = ({
   onClose,
   onSave,
   onEdit,
-  editMemo
+  editMemo,
+  openMode = 'add'
 }: AddMemoOverlayProps) => {
   const [originalText, setOriginalText] = useState('');
   const [explanation, setExplanation] = useState('');
   const [error, setError] = useState('');
+
+  const handlePaste = async () => {
+    try {
+      const { value } = await Clipboard.read();
+      if (!value || !value.trim()) {
+        setError('Clipboard is empty');
+        return;
+      }
+      const lines = value.split('\n');
+      setOriginalText(lines[0]);
+      setExplanation(lines.slice(1).join('\n'));
+      setError('');
+    } catch (err) {
+      setError('Unable to read clipboard');
+    }
+  };
+
+  const handleSwap = () => {
+    const temp = originalText;
+    setOriginalText(explanation);
+    setExplanation(temp);
+  };
 
   useEffect(() => {
     if (editMemo) {
@@ -31,7 +56,13 @@ const AddMemoOverlay = ({
     setError('');
   }, [editMemo, isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (openMode === 'paste' && isOpen && !editMemo) {
+      handlePaste();
+    }
+  }, [openMode, isOpen, editMemo]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!originalText.trim()) {
       setError('Original text is required');
@@ -42,12 +73,16 @@ const AddMemoOverlay = ({
       return;
     }
 
-    if (editMemo && onEdit) {
-      onEdit({ ...editMemo, originalText: originalText.trim(), explanation: explanation.trim() });
-    } else {
-      onSave(originalText.trim(), explanation.trim());
+    try {
+      if (editMemo && onEdit) {
+        onEdit({ ...editMemo, originalText: originalText.trim(), explanation: explanation.trim() });
+      } else {
+        await onSave(originalText.trim(), explanation.trim());
+      }
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save memo');
     }
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -75,6 +110,10 @@ const AddMemoOverlay = ({
             />
           </div>
 
+          <button type="button" className="btn-swap" onClick={handleSwap} title="Swap fields">
+            ⇅
+          </button>
+
           <div className="form-group">
             <label htmlFor="explanation">Explanation</label>
             <textarea
@@ -88,9 +127,16 @@ const AddMemoOverlay = ({
 
           {error && <p className="form-error">{error}</p>}
 
-          <button type="submit" className="btn-primary">
-            {editMemo ? 'Save Changes' : 'Add Memo'}
-          </button>
+          <div className="form-actions">
+            <button type="submit" className="btn-primary">
+              {editMemo ? 'Save Changes' : 'Add Memo'}
+            </button>
+            {openMode !== 'paste' && (
+              <button type="button" className="btn-icon" onClick={handlePaste} title="Paste from clipboard">
+                📋
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </div>
