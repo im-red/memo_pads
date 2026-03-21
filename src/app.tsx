@@ -393,15 +393,15 @@ const App = () => {
   if (!selectedNotebookId) {
     return (
       <div className="app-shell">
-        <header className="app-header">
-          <div>
+        <header className="app-header app-header--main">
+          <div className="header-content">
             <p className="eyebrow">Vocabulary Book</p>
             <h1>Memo Pads</h1>
             <p className="subtitle">
               Organize your vocabulary with notebooks. Learn and review with exercise mode.
             </p>
           </div>
-          <div className="header-menu">
+          <div className="header-menu" ref={menuRef}>
             <button
               type="button"
               className="menu-btn"
@@ -410,7 +410,7 @@ const App = () => {
               ⋮
             </button>
             {isMenuOpen && (
-              <div ref={menuRef} className="menu-dropdown">
+              <div className="menu-dropdown">
                 <button type="button" onClick={() => { setIsExportOpen(true); setIsMenuOpen(false); }}>
                   Export Data
                 </button>
@@ -477,7 +477,7 @@ const App = () => {
           <h1>{selectedNotebook?.name}</h1>
           <p className="memo-count">{notebookMemos.length} memos</p>
         </div>
-        <div className="header-menu">
+        <div className="header-menu" ref={menuRef}>
           <button
             type="button"
             className="menu-btn"
@@ -486,7 +486,7 @@ const App = () => {
             ⋮
           </button>
           {isMenuOpen && (
-            <div ref={menuRef} className="menu-dropdown">
+            <div className="menu-dropdown">
               <button type="button" onClick={() => { setIsWeReadImportOpen(true); setIsMenuOpen(false); }}>
                 Import WeRead Notes
               </button>

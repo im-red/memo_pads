@@ -106,13 +106,14 @@ const MemoList = ({
     const selection = window.getSelection();
     const hasTextSelection = selection && selection.toString().length > 0;
     const isMinimalMovement = Math.abs(offset) < 10;
+    const isMenuClick = menuRef.current && menuRef.current.contains(e.target as Node);
 
     if (cardRef.current) {
       cardRef.current.style.transition = reducedMotion ? 'none' : 'transform 0.2s ease';
     }
 
     if (!swipeActiveRef.current) {
-      if (!hasTextSelection && isMinimalMovement && e.button === 0) {
+      if (!hasTextSelection && isMinimalMovement && e.button === 0 && !isMenuClick) {
         onToggleExplanation();
       }
       swipeStartRef.current = null;
@@ -132,7 +133,7 @@ const MemoList = ({
           cardRef.current.style.transform = '';
           cardRef.current.style.transition = '';
         }
-        if (!hasTextSelection && isMinimalMovement) {
+        if (!hasTextSelection && isMinimalMovement && !isMenuClick) {
           onToggleExplanation();
         }
       }, 50);
